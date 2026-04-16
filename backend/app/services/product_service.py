@@ -3,7 +3,16 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.product import Product
 from app.models.category import Category
 from app.models.product_image import ProductImage
+from app.models.cart_item import CartItem
+from app.models.order_item import OrderItem
 from app.services.trie import SearchTrie
+
+REMOVED_PRODUCT_NAMES = [
+    "Titleist Golf Balls",
+    "Eero Mesh WiFi Router",
+    "Le Creuset Dutch Oven",
+    "Philips Air Fryer",
+]
 
 class ProductService:
     def __init__(self, db: Session):
@@ -28,6 +37,19 @@ class ProductService:
         names = [p.name for p in self.db.query(Product).all()]
         trie.build(names)
         return trie
+
+    def remove_deprecated_products(self):
+        products = self.db.query(Product).filter(Product.name.in_(REMOVED_PRODUCT_NAMES)).all()
+        if not products:
+            return 0
+
+        product_ids = [product.id for product in products]
+        self.db.query(ProductImage).filter(ProductImage.product_id.in_(product_ids)).delete(synchronize_session=False)
+        self.db.query(CartItem).filter(CartItem.product_id.in_(product_ids)).delete(synchronize_session=False)
+        self.db.query(OrderItem).filter(OrderItem.product_id.in_(product_ids)).delete(synchronize_session=False)
+        self.db.query(Product).filter(Product.id.in_(product_ids)).delete(synchronize_session=False)
+        self.db.commit()
+        return len(product_ids)
 
     def similar_products(self, product: Product, limit: int = 4):
         products = self.db.query(Product).options(joinedload(Product.category), joinedload(Product.images)).filter(Product.id != product.id).all()
@@ -155,12 +177,6 @@ class ProductService:
             ("West Elm Bed Frame", "Modern platform bed with storage.", 34999, 8, "West Elm", categories["Home"].id, [
                 "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80"
             ]),
-            ("Philips Air Fryer", "Healthy cooking with rapid air technology.", 8999, 25, "Philips", categories["Home"].id, [
-                "https://images.unsplash.com/photo-1556909114-4c36e03f3a9e?auto=format&fit=crop&w=900&q=80"
-            ]),
-            ("Le Creuset Dutch Oven", "Cast iron enamel coated casserole.", 18999, 12, "Le Creuset", categories["Home"].id, [
-                "https://images.unsplash.com/photo-1556909114-4c36e03f3a9e?auto=format&fit=crop&w=900&q=80"
-            ]),
             ("Herman Miller Aeron Chair", "Ergonomic office chair with lumbar support.", 89999, 5, "Herman Miller", categories["Home"].id, [
                 "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=900&q=80"
             ]),
@@ -169,9 +185,6 @@ class ProductService:
             ]),
             ("Vitamix Blender", "Professional-grade blender for smoothies.", 39999, 14, "Vitamix", categories["Home"].id, [
                 "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=900&q=80"
-            ]),
-            ("Eero Mesh WiFi Router", "Whole home mesh WiFi system.", 19999, 20, "Eero", categories["Home"].id, [
-                "https://images.unsplash.com/photo-1606904820-7b2da16c9c2e?auto=format&fit=crop&w=900&q=80"
             ]),
             ("Breville Espresso Machine", "Automatic espresso machine with grinder.", 79999, 6, "Breville", categories["Home"].id, [
                 "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80"
@@ -236,9 +249,6 @@ class ProductService:
             ]),
             ("Under Armour Compression Shirt", "Moisture-wicking compression athletic wear.", 2499, 50, "Under Armour", categories["Sports"].id, [
                 "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=900&q=80"
-            ]),
-            ("Titleist Golf Balls", "Premium golf balls for better performance.", 3999, 40, "Titleist", categories["Sports"].id, [
-                "https://images.unsplash.com/photo-1587174486073-ae5a917b0e7f?auto=format&fit=crop&w=900&q=80"
             ]),
             ("Speedo Swim Goggles", "Anti-fog swim goggles for competitive swimming.", 1499, 60, "Speedo", categories["Sports"].id, [
                 "https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=900&q=80"

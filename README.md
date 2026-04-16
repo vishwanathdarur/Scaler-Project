@@ -8,6 +8,9 @@ Full-stack Amazon clone assignment built with React, FastAPI, and MariaDB/MySQL-
 - Database: MariaDB/MySQL (`SQLite` fallback for local dev)
 - Auth: JWT + bcrypt/argon2
 
+## DataBase Design
+![alt text](image.png)
+
 ## Features
 - Product listing with search and category filters
 - Product detail page with image gallery, description, and specifications
@@ -17,6 +20,8 @@ Full-stack Amazon clone assignment built with React, FastAPI, and MariaDB/MySQL-
 - Amazon-inspired responsive UI
 - Demo user auto-login as `Charlie` on first visit
 - Optional order confirmation email via SMTP env vars
+
+
 
 ## Demo User
 - Name: `Charlie`

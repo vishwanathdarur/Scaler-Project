@@ -29,7 +29,9 @@ def init_db():
     db = SessionLocal()
     try:
         ensure_demo_user(db)
-        ProductService(db).seed_products_if_empty()
+        product_service = ProductService(db)
+        product_service.remove_deprecated_products()
+        product_service.seed_products_if_empty()
     finally:
         db.close()
 

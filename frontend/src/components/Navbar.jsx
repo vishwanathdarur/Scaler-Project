@@ -4,6 +4,15 @@ import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { CART_UPDATED_EVENT } from '../utils/cart'
 
+const NAV_CATEGORIES = [
+  { label: 'All', to: '/' },
+  { label: 'Electronics', to: '/?category_id=1', id: '1' },
+  { label: 'Fashion', to: '/?category_id=2', id: '2' },
+  { label: 'Home & Kitchen', to: '/?category_id=3', id: '3' },
+  { label: 'Books', to: '/?category_id=4', id: '4' },
+  { label: 'Sports', to: '/?category_id=5', id: '5' },
+]
+
 export default function Navbar({ onToggleHomeFilters }) {
   const { user, logout } = useAuth()
   const [q, setQ] = useState('')
@@ -12,6 +21,7 @@ export default function Navbar({ onToggleHomeFilters }) {
   const navigate = useNavigate()
   const location = useLocation()
   const isHomePage = location.pathname === '/'
+  const activeCategoryId = new URLSearchParams(location.search).get('category_id') || ''
 
   useEffect(() => {
     setQ(new URLSearchParams(location.search).get('search') || '')
@@ -149,25 +159,42 @@ export default function Navbar({ onToggleHomeFilters }) {
       </div>
 
       <div className="bg-[#232f3e] text-sm text-white">
-        <div className="amazon-scrollbar flex w-full gap-6 overflow-x-auto px-4 py-2.5 lg:gap-8">
+        <div className="flex items-center px-3 py-2.5 lg:hidden">
           {isHomePage && (
-            <>
-              <button
-                onClick={onToggleHomeFilters}
-                aria-label="Open filters"
-                className="flex items-center justify-center rounded border border-transparent px-2 py-0.5 hover:border-white/70"
-              >
-                <span className="text-lg leading-none">☰</span>
-              </button>
-              <Link to="/" className="whitespace-nowrap rounded border border-transparent px-2 py-0.5 font-semibold hover:border-white/70">All</Link>
-            </>
+            <button
+              onClick={onToggleHomeFilters}
+              aria-label="Open filters"
+              className="flex h-9 min-w-9 items-center justify-center rounded-full border border-white/15 bg-white/8 px-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-white/35 hover:bg-white/12"
+            >
+              <span className="text-lg leading-none">☰</span>
+            </button>
           )}
-          {!isHomePage && <Link to="/" className="whitespace-nowrap rounded border border-transparent px-2 py-0.5 hover:border-white/70">All</Link>}
-          <Link to="/?category_id=1" className="whitespace-nowrap rounded border border-transparent px-2 py-0.5 hover:border-white/70">Electronics</Link>
-          <Link to="/?category_id=2" className="whitespace-nowrap rounded border border-transparent px-2 py-0.5 hover:border-white/70">Fashion</Link>
-          <Link to="/?category_id=3" className="whitespace-nowrap rounded border border-transparent px-2 py-0.5 hover:border-white/70">Home & Kitchen</Link>
-          <Link to="/?category_id=4" className="whitespace-nowrap rounded border border-transparent px-2 py-0.5 hover:border-white/70">Books</Link>
-          <Link to="/?category_id=5" className="whitespace-nowrap rounded border border-transparent px-2 py-0.5 hover:border-white/70">Sports</Link>
+        </div>
+
+        <div className="amazon-scrollbar hidden w-full items-center gap-4 overflow-x-auto px-4 py-2.5 lg:flex xl:gap-6">
+          {isHomePage && (
+            <button
+              onClick={onToggleHomeFilters}
+              aria-label="Open filters"
+              className="flex items-center justify-center rounded border border-transparent px-2 py-0.5 hover:border-white/70"
+            >
+              <span className="text-lg leading-none">☰</span>
+            </button>
+          )}
+          {NAV_CATEGORIES.map((category) => {
+            const isActive = category.id ? category.id === activeCategoryId : !activeCategoryId
+            return (
+              <Link
+                key={category.label}
+                to={category.to}
+                className={`whitespace-nowrap rounded border px-2 py-0.5 transition ${
+                  isActive ? 'border-white/70 font-semibold' : 'border-transparent hover:border-white/70'
+                }`}
+              >
+                {category.label}
+              </Link>
+            )
+          })}
         </div>
       </div>
     </header>
