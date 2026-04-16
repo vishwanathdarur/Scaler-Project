@@ -85,14 +85,48 @@ export default function Navbar({ onToggleHomeFilters }) {
     setSuggestions([])
   }
 
+  const cartIcon = (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-7 w-7 fill-none stroke-current stroke-[1.8]">
+      <circle cx="9" cy="19" r="1.6" />
+      <circle cx="17" cy="19" r="1.6" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h2l2.1 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20 8H7.2" />
+    </svg>
+  )
+
+  const amazonLogo = (
+    <div className="relative inline-flex items-end leading-none text-white">
+      <span className="text-[2.2rem] font-bold tracking-[-0.06em]">amazon</span>
+      <span className="mb-[0.22rem] ml-0.5 text-[1.05rem] font-medium tracking-[-0.02em]">.in</span>
+      <svg
+        viewBox="0 0 92 24"
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-3 left-2 h-4 w-[74px] text-[#f3a847]"
+      >
+        <path
+          d="M4 8c14 12 44 14 70 1"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+        <path
+          d="M67 4l9 3-6 6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  )
+
   return (
     <header className="sticky top-0 z-50 shadow-[0_2px_8px_rgba(15,17,17,0.22)]">
       <div className="bg-[#131921] text-white">
         <div className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-2 md:gap-3 md:px-4 lg:grid-cols-[auto_auto_1fr_auto]">
-          <Link to="/" className="rounded border border-transparent px-1 py-1 hover:border-white/70 md:px-2">
-            <div className="text-2xl font-bold tracking-tight">
-              amazon<span className="text-[#f3a847]">.in</span>
-            </div>
+          <Link to="/" className="rounded border border-transparent px-1 py-2 hover:border-white/70 md:px-2">
+            {amazonLogo}
           </Link>
 
           <div className="hidden rounded border border-transparent px-2 py-1 text-xs leading-tight text-slate-200 lg:block hover:border-white/70">
@@ -136,8 +170,11 @@ export default function Navbar({ onToggleHomeFilters }) {
                   <div className="font-bold">& Orders</div>
                 </Link>
                 <Link to="/cart" className="relative rounded border border-transparent px-1.5 py-1 hover:border-white/70 md:px-2">
-                  <span className="absolute left-4 top-0 text-sm font-bold text-[#f3a847] md:left-5">{cartCount}</span>
-                  <div className="pt-3 font-bold">Cart</div>
+                  <span className="absolute left-5 top-0 text-sm font-bold text-[#f3a847] md:left-6">{cartCount}</span>
+                  <div className="flex items-end gap-1 pt-1">
+                    <span className="text-white">{cartIcon}</span>
+                    <span className="font-bold">Cart</span>
+                  </div>
                 </Link>
                 <button onClick={logout} className="rounded border border-transparent px-1.5 py-1 text-slate-200 hover:border-white/70 hover:text-white md:px-2">
                   Logout

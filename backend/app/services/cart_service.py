@@ -18,9 +18,10 @@ class CartService:
         product = self.db.query(Product).filter(Product.id == product_id).first()
         if not product:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
-        if product.stock < quantity:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not enough stock")
         item = self.db.query(CartItem).filter(CartItem.user_id == user.id, CartItem.product_id == product_id).first()
+        requested_quantity = quantity + (item.quantity if item else 0)
+        if product.stock < requested_quantity:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not enough stock")
         if item:
             item.quantity += quantity
         else:

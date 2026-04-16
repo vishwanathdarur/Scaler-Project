@@ -38,7 +38,7 @@ export default function ProductPage() {
   const [similar, setSimilar] = useState([])
   const [activeImg, setActiveImg] = useState(0)
   const [quantity, setQuantity] = useState(1)
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState(null)
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -54,14 +54,23 @@ export default function ProductPage() {
     load()
   }, [id])
 
+  useEffect(() => {
+    if (!notice) {
+      return
+    }
+
+    const timer = window.setTimeout(() => setNotice(null), 2800)
+    return () => window.clearTimeout(timer)
+  }, [notice])
+
   const addToCart = async (nextQuantity = quantity) => {
     try {
       await api.post('/cart/add', { product_id: product.id, quantity: nextQuantity })
-      setNotice(`${product.name} added to cart`)
+      setNotice({ type: 'success', message: `${product.name} added to cart` })
       emitCartUpdated()
       return true
     } catch (err) {
-      setNotice(err.response?.data?.detail || 'Could not add this item to cart.')
+      setNotice({ type: 'error', message: err.response?.data?.detail || 'Could not add this item to cart.' })
       return false
     }
   }
@@ -90,7 +99,8 @@ export default function ProductPage() {
   const mrp = Number(product.price) * 1.18
   const savings = Math.max(0, mrp - Number(product.price))
   const discountPercent = mrp > 0 ? Math.round((savings / mrp) * 100) : 0
-  const quantityOptions = Array.from({ length: Math.max(1, Math.min(product.stock || 1, 10)) }, (_, index) => index + 1)
+  const isOutOfStock = product.stock <= 0
+  const quantityOptions = Array.from({ length: Math.min(product.stock || 0, 10) }, (_, index) => index + 1)
   const breadcrumb = ['Home', product.category?.name || 'Category', product.brand, product.name].filter(Boolean)
   const detailRows = [
     ['Brand', product.brand],
@@ -102,14 +112,8 @@ export default function ProductPage() {
   ]
 
   return (
-    <div className="page-shell mx-auto max-w-[1600px] px-3 py-4 sm:px-4 lg:px-6">
-      {notice && (
-        <div className="mb-4 rounded-lg border border-[#cce3de] bg-[#f0faf8] px-4 py-3 text-sm text-[#067d62]">
-          {notice}
-        </div>
-      )}
-
-      <div className="mb-4 overflow-x-auto text-sm text-[#565959]">
+    <div className="page-shell w-full px-0 py-4">
+      <div className="mb-4 overflow-x-auto px-4 text-sm text-[#565959] xl:px-6">
         <div className="flex min-w-max items-center gap-2 whitespace-nowrap">
           {breadcrumb.map((item, index) => (
             <div key={`${item}-${index}`} className="flex items-center gap-2">
@@ -120,7 +124,7 @@ export default function ProductPage() {
         </div>
       </div>
 
-      <div className="bg-white">
+      <div className="bg-white px-4 xl:px-6">
         <div className="grid gap-6 xl:grid-cols-[96px_minmax(360px,620px)_minmax(320px,1fr)_300px]">
           <div className="order-2 xl:order-1">
             <div className="amazon-scrollbar flex gap-3 overflow-x-auto xl:flex-col xl:overflow-visible">
@@ -245,8 +249,8 @@ export default function ProductPage() {
               <span className="font-semibold">FREE delivery</span> {getDeliveryText(product).replace('FREE delivery ', '')}
             </div>
             <button className="mt-2 text-left text-sm text-[#007185]">Delivering to your saved address</button>
-            <div className={`mt-4 text-2xl ${product.stock > 0 ? 'text-[#007600]' : 'text-[#b12704]'}`}>
-              {product.stock > 0 ? 'In stock' : 'Unavailable'}
+            <div className={`mt-4 text-2xl ${isOutOfStock ? 'text-[#b12704]' : 'text-[#007600]'}`}>
+              {isOutOfStock ? 'Out of stock' : 'In stock'}
             </div>
 
             <div className="mt-4 grid grid-cols-[88px_1fr] gap-y-2 text-sm text-[#565959]">
@@ -261,10 +265,12 @@ export default function ProductPage() {
             <label className="mt-5 block text-sm text-[#0f1111]">
               <span className="mb-2 block">Quantity:</span>
               <select
-                value={quantity}
+                value={isOutOfStock ? '' : quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
+                disabled={isOutOfStock}
                 className="w-full rounded-xl border border-[#888c8c] bg-[#f0f2f2] px-3 py-2.5 outline-none focus:border-[#e77600]"
               >
+                {isOutOfStock && <option value="">Out of stock</option>}
                 {quantityOptions.map((value) => (
                   <option key={value} value={value}>{value}</option>
                 ))}
@@ -274,13 +280,15 @@ export default function ProductPage() {
             <div className="mt-5 space-y-3">
               <button
                 onClick={user ? () => addToCart(quantity) : () => navigate('/login')}
-                className="w-full rounded-full bg-[#ffd814] px-5 py-2.5 font-medium text-black transition hover:bg-[#f7ca00]"
+                disabled={isOutOfStock}
+                className="w-full rounded-full bg-[#ffd814] px-5 py-2.5 font-medium text-black transition enabled:hover:bg-[#f7ca00] disabled:cursor-not-allowed disabled:bg-[#e7e7e7] disabled:text-[#565959]"
               >
                 Add to Cart
               </button>
               <button
                 onClick={buyNow}
-                className="w-full rounded-full bg-[#ffa41c] px-5 py-2.5 font-medium text-black transition hover:bg-[#fa8900]"
+                disabled={isOutOfStock}
+                className="w-full rounded-full bg-[#ffa41c] px-5 py-2.5 font-medium text-black transition enabled:hover:bg-[#fa8900] disabled:cursor-not-allowed disabled:bg-[#e7e7e7] disabled:text-[#565959]"
               >
                 Buy Now
               </button>
@@ -292,7 +300,7 @@ export default function ProductPage() {
         </div>
       </div>
 
-      <div className="mt-10 rounded-xl border border-[#e7e7e7] bg-white p-5 shadow-[0_2px_8px_rgba(15,17,17,0.05)]">
+      <div className="mx-4 mt-10 rounded-xl border border-[#e7e7e7] bg-white p-5 shadow-[0_2px_8px_rgba(15,17,17,0.05)] xl:mx-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-2xl font-bold text-[#0f1111]">Products related to this item</h2>
           <Link to="/" className="hidden text-sm text-[#007185] sm:block">See more from this category</Link>
@@ -304,13 +312,27 @@ export default function ProductPage() {
               product={item}
               onAddToCart={user ? async () => {
                 await api.post('/cart/add', { product_id: item.id, quantity: 1 })
-                setNotice(`${item.name} added to cart`)
+                setNotice({ type: 'success', message: `${item.name} added to cart` })
                 emitCartUpdated()
               } : () => navigate('/login')}
             />
           ))}
         </div>
       </div>
+
+      {notice && (
+        <div className="pointer-events-none fixed bottom-4 right-4 z-[70] max-w-[calc(100vw-2rem)] sm:bottom-6 sm:right-6 sm:max-w-sm">
+          <div
+            className={`rounded-2xl border px-4 py-3 shadow-[0_12px_30px_rgba(15,17,17,0.18)] backdrop-blur-sm ${
+              notice.type === 'error'
+                ? 'border-[#f1b6b6] bg-[#fff5f5] text-[#b12704]'
+                : 'border-[#b9e3d8] bg-[#f2fbf8] text-[#067d62]'
+            }`}
+          >
+            <div className="text-sm font-medium">{notice.message}</div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
