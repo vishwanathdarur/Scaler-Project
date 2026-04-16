@@ -1,0 +1,60 @@
+:root {
+  font-family: "Amazon Ember", "Segoe UI", sans-serif;
+  color: #0f1111;
+  background:
+    linear-gradient(180deg, #e3e6e6 0, #e3e6e6 220px, #f7f8fa 220px, #f7f8fa 100%);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: #0f1111;
+  background: transparent;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+input,
+textarea,
+button,
+select {
+  font: inherit;
+}
+
+img {
+  display: block;
+}
+
+.page-shell {
+  min-height: calc(100vh - 108px);
+}
+
+.amazon-scrollbar::-webkit-scrollbar {
+  height: 8px;
+}
+
+.amazon-scrollbar::-webkit-scrollbar-thumb {
+  background: #c7ced8;
+  border-radius: 999px;
+}

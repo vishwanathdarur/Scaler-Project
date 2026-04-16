@@ -1,0 +1,10 @@
+# Root-level tooling and editor files
+.venv/
+.pytest_cache/
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Local environment files outside app folders
+.env
