@@ -20,6 +20,7 @@ Full-stack Amazon clone assignment built with React, FastAPI, and MariaDB/MySQL-
 - Amazon-inspired responsive UI
 - Demo user auto-login as `Charlie` on first visit
 - Optional order confirmation email via SMTP env vars
+- Backend LRU cache for hot catalog reads (`/products`, `/products/{id}`, `/products/meta/categories`) using a separate hash map + doubly linked list implementation
 
 
 
@@ -81,6 +82,12 @@ Validation performed:
 - `POST /api/orders`
 - `GET /api/orders`
 - `GET /api/orders/{id}`
+
+## Backend Optimizations
+- Implemented a separate LRU cache in [backend/app/services/lru_cache.py](backend/app/services/lru_cache.py) to speed up frequently accessed catalog endpoints.
+- The cache uses the classic DSA design of a hash map plus doubly linked list, giving `O(1)` average-time `get` and `put`.
+- Product listing, product detail, and category metadata now reuse cached responses instead of repeatedly rebuilding the same database payloads.
+- This is especially useful for an e-commerce homepage because the same popular products and categories are requested many times.
 
 ## Assumptions
 - Sample products are seeded automatically when the database is empty.

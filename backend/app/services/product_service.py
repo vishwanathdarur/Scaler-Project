@@ -5,6 +5,7 @@ from app.models.category import Category
 from app.models.product_image import ProductImage
 from app.models.cart_item import CartItem
 from app.models.order_item import OrderItem
+from app.services.lru_cache import catalog_cache
 from app.services.trie import SearchTrie
 
 REMOVED_PRODUCT_NAMES = [
@@ -32,6 +33,40 @@ class ProductService:
     def get_categories(self):
         return self.db.query(Category).order_by(Category.name.asc()).all()
 
+    def list_products_cached(self, search: str | None = None, category_id: int | None = None):
+        cache_key = f"products:list:{search or ''}:{category_id or ''}"
+        cached = catalog_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        products = [self._serialize_product(product) for product in self.list_products(search=search, category_id=category_id)]
+        catalog_cache.put(cache_key, products)
+        return products
+
+    def get_product_cached(self, product_id: int):
+        cache_key = f"products:detail:{product_id}"
+        cached = catalog_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        product = self.get_product(product_id)
+        if not product:
+            return None
+
+        payload = self._serialize_product(product)
+        catalog_cache.put(cache_key, payload)
+        return payload
+
+    def get_categories_cached(self):
+        cache_key = "products:categories"
+        cached = catalog_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        categories = [{"id": category.id, "name": category.name} for category in self.get_categories()]
+        catalog_cache.put(cache_key, categories)
+        return categories
+
     def rebuild_trie(self):
         trie = SearchTrie()
         names = [p.name for p in self.db.query(Product).all()]
@@ -49,6 +84,7 @@ class ProductService:
         self.db.query(OrderItem).filter(OrderItem.product_id.in_(product_ids)).delete(synchronize_session=False)
         self.db.query(Product).filter(Product.id.in_(product_ids)).delete(synchronize_session=False)
         self.db.commit()
+        catalog_cache.clear()
         return len(product_ids)
 
     def similar_products(self, product: Product, limit: int = 4):
@@ -270,3 +306,25 @@ class ProductService:
             for img in images:
                 self.db.add(ProductImage(product_id=product.id, image_url=img))
         self.db.commit()
+        catalog_cache.clear()
+
+    def _serialize_product(self, product: Product):
+        return {
+            "id": product.id,
+            "name": product.name,
+            "description": product.description,
+            "price": float(product.price),
+            "stock": product.stock,
+            "brand": product.brand,
+            "category": {
+                "id": product.category.id,
+                "name": product.category.name,
+            } if product.category else None,
+            "images": [
+                {
+                    "id": image.id,
+                    "image_url": image.image_url,
+                }
+                for image in product.images
+            ],
+        }

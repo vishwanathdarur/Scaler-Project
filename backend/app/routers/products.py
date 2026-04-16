@@ -13,11 +13,11 @@ def list_products(
     category_id: int | None = Query(default=None),
     db: Session = Depends(get_db),
 ):
-    return ProductService(db).list_products(search=search, category_id=category_id)
+    return ProductService(db).list_products_cached(search=search, category_id=category_id)
 
 @router.get("/{product_id}", response_model=ProductDetailOut)
 def get_product(product_id: int, db: Session = Depends(get_db)):
-    return ProductService(db).get_product(product_id)
+    return ProductService(db).get_product_cached(product_id)
 
 @router.get("/{product_id}/similar", response_model=list[ProductListItem])
 def similar_products(product_id: int, db: Session = Depends(get_db)):
@@ -28,4 +28,4 @@ def similar_products(product_id: int, db: Session = Depends(get_db)):
 
 @router.get("/meta/categories", response_model=list[CategoryOut])
 def categories(db: Session = Depends(get_db)):
-    return ProductService(db).get_categories()
+    return ProductService(db).get_categories_cached()
