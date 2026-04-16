@@ -13,7 +13,11 @@ export default function SuccessPage() {
           <div>
             <div className="mb-3 text-5xl">✅</div>
             <h1 className="text-2xl font-bold text-[#067d62] sm:text-3xl">Order placed, thanks!</h1>
-            <p className="mt-2 text-slate-600">Confirmation will be sent after your shipment is processed.</p>
+            <p className="mt-2 text-slate-600">
+              {orderData?.email?.sent
+                ? `Confirmation email sent to ${orderData.email.recipient}.`
+                : 'Order placed successfully. Email delivery is best-effort in this demo.'}
+            </p>
           </div>
           <div className="w-full rounded-2xl bg-[#f7f7f7] px-5 py-4 sm:w-auto">
             <div className="text-sm text-slate-500">Order ID</div>
@@ -36,6 +40,13 @@ export default function SuccessPage() {
             </div>
           </div>
         </div>
+
+        {orderData?.email && (
+          <div className="mt-6 rounded-2xl border border-[#d5d9d9] bg-[#f7f7f7] p-5 text-sm text-slate-700">
+            <div><span className="font-semibold">Email status:</span> {orderData.email.reason}</div>
+            <div className="mt-1"><span className="font-semibold">Recipient:</span> {orderData.email.recipient || 'No recipient resolved'}</div>
+          </div>
+        )}
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Link to="/orders" className="rounded-full bg-[#ffd814] px-5 py-3 text-center font-semibold">View Your Orders</Link>

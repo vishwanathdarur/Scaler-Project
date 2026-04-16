@@ -4,7 +4,7 @@ import api from '../services/api'
 const AuthContext = createContext()
 const DEMO_LOGIN_DISABLED_KEY = 'demo_login_disabled'
 const DEMO_USER = {
-  email: 'charlie@amazonclone.dev',
+  email: 'vpcharlie777@gmail.com',
   password: 'charlie123'
 }
 

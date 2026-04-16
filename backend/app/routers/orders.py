@@ -18,5 +18,9 @@ def get_order(order_id: int, db: Session = Depends(get_db), user: User = Depends
 
 @router.post("")
 def create_order(payload: OrderCreateIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    order = OrderService(db).place_order(user, payload.shipping_address)
-    return {"message": "Order placed successfully", "order_id": order.user_order_number}
+    order, email_result = OrderService(db).place_order(user, payload.shipping_address)
+    return {
+        "message": "Order placed successfully",
+        "order_id": order.user_order_number,
+        "email": email_result,
+    }

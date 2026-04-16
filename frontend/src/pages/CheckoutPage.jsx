@@ -57,7 +57,8 @@ export default function CheckoutPage() {
           orderNumber: res.data.order_id,
           shippingAddress: address,
           summary,
-          itemCount: cart.reduce((count, item) => count + item.quantity, 0)
+          itemCount: cart.reduce((count, item) => count + item.quantity, 0),
+          email: res.data.email,
         }
       })
     } catch (err) {

@@ -53,8 +53,8 @@ class OrderService:
 
         self.db.commit()
         self.db.refresh(order)
-        self._send_order_confirmation_email(user, order, shipping_address, cart_items)
-        return order
+        email_result = self._send_order_confirmation_email(user, order, shipping_address, cart_items)
+        return order, email_result
 
     def _send_order_confirmation_email(self, user: User, order: Order, shipping_address: str, cart_items: list[CartItem]):
         item_lines = [
@@ -62,7 +62,7 @@ class OrderService:
             for item in cart_items
         ]
         try:
-            EmailService().send_order_confirmation(
+            return EmailService().send_order_confirmation(
                 to_email=user.email,
                 customer_name=user.name,
                 order_number=order.user_order_number,
@@ -72,4 +72,4 @@ class OrderService:
             )
         except Exception:
             # Email is best-effort so a mail failure does not block checkout.
-            return
+            return {"sent": False, "recipient": user.email, "reason": "send_failed"}

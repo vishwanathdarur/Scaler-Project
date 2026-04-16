@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useState } from 'react'
 import Navbar from './components/Navbar'
+import ScrollToTop from './components/ScrollToTop'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
@@ -16,6 +17,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Navbar onToggleHomeFilters={() => setHomeFiltersOpen((current) => !current)} />
       <Routes>
         <Route path="/" element={<HomePage filtersOpen={homeFiltersOpen} setFiltersOpen={setHomeFiltersOpen} />} />

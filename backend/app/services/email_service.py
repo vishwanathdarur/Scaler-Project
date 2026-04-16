@@ -11,18 +11,29 @@ class EmailService:
         self.password = os.getenv("SMTP_PASSWORD", "")
         self.from_email = os.getenv("SMTP_FROM_EMAIL", self.username or "")
         self.use_tls = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+        self.demo_fallback_recipient = os.getenv("DEMO_EMAIL_FALLBACK", self.username or self.from_email or "")
 
     def is_configured(self):
         return all([self.host, self.port, self.username, self.password, self.from_email])
 
+    def resolve_recipient(self, to_email: str):
+        recipient = (to_email or "").strip()
+        if recipient.endswith("@amazonclone.dev") and self.demo_fallback_recipient:
+            return self.demo_fallback_recipient
+        return recipient
+
     def send_order_confirmation(self, *, to_email, customer_name, order_number, total_amount, shipping_address, item_lines):
         if not self.is_configured():
-            return False
+            return {"sent": False, "recipient": None, "reason": "smtp_not_configured"}
+
+        recipient = self.resolve_recipient(to_email)
+        if not recipient:
+            return {"sent": False, "recipient": None, "reason": "missing_recipient"}
 
         message = EmailMessage()
         message["Subject"] = f"Amazon Clone order confirmation #{order_number}"
         message["From"] = self.from_email
-        message["To"] = to_email
+        message["To"] = recipient
         message.set_content(
             "\n".join([
                 f"Hi {customer_name},",
@@ -44,4 +55,4 @@ class EmailService:
             server.login(self.username, self.password)
             server.send_message(message)
 
-        return True
+        return {"sent": True, "recipient": recipient, "reason": "sent"}

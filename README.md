@@ -26,7 +26,7 @@ Full-stack Amazon clone assignment built with React, FastAPI, and MariaDB/MySQL-
 
 ## Demo User
 - Name: `Charlie`
-- Email: `charlie@amazonclone.dev`
+- Email: `vpcharlie777@gmail.com`
 - Password: `charlie123`
 
 Charlie is auto-logged in by default on first load. If you log out, the login/signup pages are still available for manual testing.

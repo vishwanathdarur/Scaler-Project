@@ -38,7 +38,7 @@ def init_db():
 
 def ensure_demo_user(db):
     demo_name = os.getenv("DEMO_USER_NAME", "Charlie")
-    demo_email = os.getenv("DEMO_USER_EMAIL", "charlie@amazonclone.dev")
+    demo_email = os.getenv("DEMO_USER_EMAIL", "vpcharlie777@gmail.com")
     demo_password = os.getenv("DEMO_USER_PASSWORD", "charlie123")
 
     existing_user = db.query(User).filter(User.email == demo_email).first()
